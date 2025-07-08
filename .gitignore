@@ -205,3 +205,30 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# 设置忽略文件
+
+# 忽略所有.vscode文件夹
+**/.vscode
+
+# 忽略所有runs文件夹
+**/runs
+
+# yolo文件夹中ultralytics库只上传ultralytics文件夹
+/yolo/docker/
+/yolo/docs/
+/yolo/examples/
+/yolo/tests/
+/yolo/CITATION.cff
+/yolo/CONTRIBUTING.md
+/yolo/LICENSE
+/yolo/README.md
+/yolo/README.zh-CN.md
+/yolo/mkdocs.yml
+/yolo/pyproject.toml
+/yolo/yolo11n.pt
+/yolo/yolo8n.pt
+/yolo/datasets/rock_arm/
+
+
