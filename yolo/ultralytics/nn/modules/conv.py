@@ -21,6 +21,8 @@ __all__ = (
     "CBAM",
     "Concat",
     "RepConv",
+
+    "FCM", "FCM_1", "FCM_2", "FCM_3", "Pzconv", "Down",
 )
 
 
@@ -330,3 +332,212 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
+
+
+'''
+==================== START ====================
+AAAI 2025 小目标检测模型 FBRT-YOLO
+paper: https://arxiv.org/abs/2504.20670
+code: https://github.com/galaxy-oss/FCM.git
+'''
+class DWConv(nn.Module): # 会覆盖掉前面的同类名
+    """Depthwise Conv + Conv
+    分组卷积"""
+    
+    def __init__(self, in_channels):
+        super().__init__()
+        self.dconv = nn.Conv2d(
+            in_channels, in_channels, 3,
+            1, 1, groups=in_channels
+        )
+
+    def forward(self, x):
+        x = self.dconv(x)
+        return x
+
+
+class Channel(nn.Module):
+    """Channel Guidance
+    通道引导"""
+    def __init__(self, dim):
+        super().__init__()
+        self.dwconv = self.dconv = nn.Conv2d(
+            dim, dim, 3, 1, 1, groups=dim
+        )
+        self.Apt = nn.AdaptiveAvgPool2d(1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        x2 = self.dwconv(x)
+        x5 = self.Apt(x2)
+        x6 = self.sigmoid(x5)
+
+        return x6
+
+
+def Spatial(nn.Module):
+    """Spatial Aggregation
+    空间聚合"""
+    def __init__(self, dim):
+        super().__init__()
+        self.conv1 = nn.Conv2d(dim, 1, 1, 1)
+        self.bn = nn.BatchNorm2d(1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x5 = self.bn(x1)
+        x6 = self.sigmoid(x5)
+
+        return x6
+
+
+class FCM_3(nn.Module):
+    """4层FCM模块——3"""
+    def __init__(self, dim, dim_out):
+        super().__init__()
+        # 按通道分成两块 X1 和 X2
+        self.one = dim - dim // 4
+        self.two = dim // 4
+        self.conv1 = Conv(dim - dim // 4, dim - dim // 4, 3, 1, 1)
+        self.conv12 = Conv(dim - dim // 4, dim - dim // 4, 3, 1, 1)
+        self.conv123 = Conv(dim - dim // 4, dim, 1, 1)
+        self.conv2 = Conv(dim // 4, dim, 1, 1)
+        self.spatial = Spatial(dim)
+        self.channel = Channel(dim)
+
+    def forward(self, x):
+        x1, x2 = torch.split(x, [self.one, self.two], dim=1)
+        x3 = self.conv1(x1)
+        x3 = self.conv12(x3)
+        x3 = self.conv123(x3)
+        x4 = self.conv2(x2)
+        x33 = self.spatial(x4) * x3
+        x44 = self.channel(x3) * x4
+        x5 = x33 + x44
+        return x5
+
+
+class FCM_2(nn.Module):
+    """4层FCM模块——2"""
+    def __init__(dim, dim_out):
+        super().__init__()
+        self.one = dim - dim // 4
+        self.two = dim // 4
+        self.conv1 = Conv(dim - dim // 4, dim - dim // 4, 3, 1, 1)
+        self.conv12 = Conv(dim - dim // 4, dim - dim // 4, 3, 1, 1)
+        self.conv123 = Conv(dim - dim // 4, dim, 1, 1)
+        self.conv2 = Conv(dim // 4, dim, 1, 1)
+        self.spatial = Spatial(dim)
+        self.channel = Channel(dim)
+
+    def forward(self, x):
+        x1, x2 = torch.split(x, [self.one, self.two], dim=1)
+        x3 = self.conv1(x1)
+        x3 = self.conv12(x3)
+        x3 = self.conv123(x3)
+        x4 = self.conv2(x2)
+        x33 = self.spatial(x4) * x3
+        x44 = self.channel(x3) * x4
+        x5 = x33 + x44
+        return x5
+
+
+class FCM_1(nn.Module):
+    """4层FCM模块——1"""
+    def __init__(self, dim, dim_out):
+        super().__init__()
+        self.one = dim // 4
+        self.two = dim - dim // 4
+        self.conv1 = Conv(dim // 4, dim // 4, 3, 1, 1)
+        self.conv12 = Conv(dim // 4, dim // 4, 3, 1, 1)
+        self.conv123 = Conv(dim // 4, dim, 1, 1)
+        self.conv2 = Conv(dim - dim // 4, dim, 1, 1)
+        self.spatial = Spatial(dim)
+        self.channel = Channel(dim)
+
+    def forward(self, x):
+        x1, x2 = torch.split(x, [self.one, self.two], dim=1)
+        x3 = self.conv1(x1)
+        x3 = self.conv12(x3)
+        x3 = self.conv123(x3)
+        x4 = self.conv2(x2)
+        x33 = self.spatial(x4) * x3
+        x44 = self.channel(x3) * x4
+        x5 = x33 + x44
+        return x5
+
+
+class FCM(nn.Module):
+    """4层FCM模块——0"""
+    def __init__(self, dim, dim_out):
+        super().__init__()
+        self.one = dim // 4
+        self.two = dim - dim // 4
+        self.conv1 = Conv(dim // 4, dim // 4, 3, 1, 1)
+        self.conv12 = Conv(dim // 4, dim // 4, 3, 1, 1)
+        self.conv123 = Conv(dim // 4, dim, 1, 1)
+        self.conv2 = Conv(dim - dim // 4, dim, 1, 1)
+        self.conv3 = Conv(dim, dim, 1, 1)
+        self.spatial = Spatial(dim)
+        self.channel = Channel(dim)
+
+    def forward(self, x):
+        x1, x2 = torch.split(x, [self.one, self.two], dim=1)
+        x3 = self.conv1(x1)
+        x3 = self.conv12(x3)
+        x3 = self.conv123(x3)
+        x4 = self.conv2(x2)
+        x33 = self.spatial(x4) * x3
+        x44 = self.channel(x3) * x4
+        x5 = x33 + x44
+        x5 = self.conv3(x5)
+        return x5
+
+
+class Pzconv(nn.Module):
+    """MKP中的PWConv"""
+    def __init__(self, dim, k=1, s=1, p=None, g=1, d=1, act=True):
+        super().__init__()
+        self.conv1 = nn.Conv2d(
+            dim, dim, 3, 1, 1, groups=dim
+        )
+        self.conv2 = Conv(dim, dim, k=1, s=1, )
+        self.conv3 = nn.Conv2d(
+            dim, dim, 5, 1, 2, groups=dim
+        )
+        self.conv4 = Conv(dim, dim, k=1, s=1, )
+        self.conv5 = nn.Conv2d(
+            dim, dim, 7, 1, 3, groups=dim
+        )
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x2 = self.conv2(x1)
+        x3 = self.conv3(x2)
+        x4 = self.conv4(x3)
+        x5 = self.conv5(x4)
+        x6 = x5 + x
+        return x6
+
+
+class Down(nn.Module):
+    def __init__(self, dim, dim_out):
+        super().__init__()
+        self.conv2 = Conv(dim, dim, 3, 2, 1, g=dim // 2, act=False)
+        self.conv4 = Conv(dim, dim_out, 1, 1)
+
+    def forward(self, x):
+        x2 = self.conv2(x)
+        x2 = self.conv4(x2)
+        return x2
+'''
+==================== END ====================
+AAAI 2025 小目标检测模型 FBRT-YOLO
+paper: https://arxiv.org/abs/2504.20670
+code: https://github.com/galaxy-oss/FCM.git
+'''
+    
+
+
+
