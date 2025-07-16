@@ -375,7 +375,7 @@ class Channel(nn.Module):
         return x6
 
 
-def Spatial(nn.Module):
+class Spatial(nn.Module):
     """Spatial Aggregation
     空间聚合"""
     def __init__(self, dim):
@@ -420,7 +420,7 @@ class FCM_3(nn.Module):
 
 class FCM_2(nn.Module):
     """4层FCM模块——2"""
-    def __init__(dim, dim_out):
+    def __init__(self, dim, dim_out):
         super().__init__()
         self.one = dim - dim // 4
         self.two = dim // 4
@@ -496,7 +496,7 @@ class FCM(nn.Module):
 
 
 class Pzconv(nn.Module):
-    """MKP中的PWConv"""
+    """MKP"""
     def __init__(self, dim, k=1, s=1, p=None, g=1, d=1, act=True):
         super().__init__()
         self.conv1 = nn.Conv2d(
@@ -518,6 +518,7 @@ class Pzconv(nn.Module):
         x4 = self.conv4(x3)
         x5 = self.conv5(x4)
         x6 = x5 + x
+
         return x6
 
 

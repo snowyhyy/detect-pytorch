@@ -61,6 +61,9 @@ from ultralytics.nn.modules import (
     Segment,
     WorldDetect,
     v10Detect,
+
+    FCM_3, FCM_2, FCM_1, FCM, Pzconv, Down, # AAAI 2025 小目标检测模型 FBRT-YOLO | paper: https://arxiv.org/abs/2504.20670 | code: https://github.com/galaxy-oss/FCM.git
+    
 )
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
@@ -997,6 +1000,8 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             PSA,
             SCDown,
             C2fCIB,
+
+            FCM_3, FCM_2, FCM_1, FCM, Pzconv, Down, # AAAI 2025 小目标检测模型 FBRT-YOLO | paper: https://arxiv.org/abs/2504.20670 | code: https://github.com/galaxy-oss/FCM.git
         }:
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)
@@ -1023,6 +1028,9 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 C2fPSA,
                 C2fCIB,
                 C2PSA,
+
+                # FCM_3, FCM_2, FCM_1, FCM, # AAAI 2025 小目标检测模型 FBRT-YOLO | paper: https://arxiv.org/abs/2504.20670 | code: https://github.com/galaxy-oss/FCM.git
+        
             }:
                 args.insert(2, n)  # number of repeats
                 n = 1

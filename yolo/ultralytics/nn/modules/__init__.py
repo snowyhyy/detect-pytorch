@@ -71,6 +71,9 @@ from .conv import (
     LightConv,
     RepConv,
     SpatialAttention,
+
+    FCM, FCM_1, FCM_2, FCM_3, Pzconv, Down, # AAAI 2025 小目标检测模型 FBRT-YOLO | paper: https://arxiv.org/abs/2504.20670 | code: https://github.com/galaxy-oss/FCM.git
+    
 )
 from .head import OBB, Classify, Detect, Pose, RTDETRDecoder, Segment, WorldDetect, v10Detect
 from .transformer import (
@@ -156,4 +159,7 @@ __all__ = (
     "C2fCIB",
     "Attention",
     "PSA",
+
+    "FCM", "FCM_1", "FCM_2", "FCM_3", "Pzconv", "Down", # AAAI 2025 小目标检测模型 FBRT-YOLO | paper: https://arxiv.org/abs/2504.20670 | code: https://github.com/galaxy-oss/FCM.git
+    
 )

@@ -215,6 +215,12 @@ __marimo__/
 # 忽略所有runs文件夹
 **/runs
 
+# 忽略所有 权重文件
+*.pt
+
+# 忽略paper
+**/paper
+
 # yolo文件夹中ultralytics库只上传ultralytics文件夹
 /yolo/docker/
 /yolo/docs/

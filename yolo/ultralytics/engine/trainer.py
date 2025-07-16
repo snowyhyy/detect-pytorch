@@ -690,7 +690,9 @@ class BaseTrainer:
 
     def check_resume(self, overrides):
         """Check if resume checkpoint exists and update arguments accordingly."""
-        resume = self.args.resume
+        resume = self.args.resume # 如果要断点续训则把该行注释，加入续训权重
+        # resume = ''
+
         if resume:
             try:
                 exists = isinstance(resume, (str, Path)) and Path(resume).exists()
