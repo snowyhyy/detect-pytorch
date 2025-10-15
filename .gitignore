@@ -216,7 +216,7 @@ __marimo__/
 **/runs
 
 # 忽略所有 权重文件
-*.pt
+# *.pt
 
 # 忽略paper
 **/paper
@@ -234,7 +234,7 @@ __marimo__/
 /yolo/mkdocs.yml
 /yolo/pyproject.toml
 /yolo/yolo11n.pt
-# /yolo/yolov8n.pt
+
 /yolo/datasets/rock_arm/
 
 /yolo/yolobox_to_xml.py
