@@ -237,4 +237,9 @@ __marimo__/
 /yolo/yolov8n.pt
 /yolo/datasets/rock_arm/
 
+/yolo/yolobox_to_xml.py
+/yolo/export.py
+/yolo/infer.py
+
+
 
